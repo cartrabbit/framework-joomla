@@ -1,0 +1,21 @@
+{
+  "name": "cartrabbit/framework-joomla",
+  "description": "Cartrabbit",
+  "license": "MIT",
+  "require": {
+    "jgrossi/corcel": ">=1.4",
+    "illuminate/container": ">=5.4",
+    "illuminate/http": ">=5.4",
+    "illuminate/view": "^5.4",
+    "illuminate/filesystem": "^5.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Cartrabbit\\Framework\\": "Cartrabbit/Framework/"
+    }
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "minimum-stability": "dev"
+}
