@@ -1,6 +1,6 @@
 <?php
 /**
- * Cartrabbit - A PHP Framework For Wordpress
+ * Cartrabbit - A PHP Framework For Joomla
  *
  * @package  Cartrabbit
  * @author   Ashlin <ashlin@flycart.org>
@@ -25,14 +25,6 @@ if (!file_exists(CARTRABBIT_STORAGE)) {
 
 @require 'helpers.php';
 
-///**
-// * Load the WP plugin system.
-// */
-//if (array_search(ABSPATH . 'wp-admin/includes/plugin.php', get_included_files()) === false)
-//{
-//    require_once ABSPATH . 'wp-admin/includes/plugin.php';
-//}
-
 /**
  * Get Cartrabbit.
  */
@@ -52,23 +44,24 @@ foreach ($iterator as $directory)
     }
     $root = $directory->getPath() . '/' . $directory->getFilename();
 
-    if ( ! file_exists($root . '/cartrabbit.config.php'))
-    {
+    if ( ! file_exists($root . '/cartrabbit.config.php')) {
         continue;
     }
     $fileName = explode('_', $directory->getFilename());
+
+    if (!JComponentHelper::isEnabled($directory->getFilename(), true)) {
+        continue;
+    }
+
     $fileName = isset($fileName[1])? $fileName[1]: $fileName[0];
     $config = $cartrabbit->getPluginConfig($root);
 
     $plugin = substr($root . '/'.$fileName.'.php', strlen(JPATH_ADMINISTRATOR.DIRECTORY_SEPARATOR.'components'));
     $plugin = ltrim($plugin, '/');
 
-//    register_activation_hook($plugin, function () use ($cartrabbit, $config, $root)
-//    {
-        if ( ! $cartrabbit->pluginMatches($config))
-        {
-            $cartrabbit->pluginMismatched($root);
-        }
+    if ( ! $cartrabbit->pluginMatches($config)) {
+        $cartrabbit->pluginMismatched($root);
+    }
 
     // To register the namespace 
     $loader = new \Composer\Autoload\ClassLoader();
@@ -82,24 +75,10 @@ foreach ($iterator as $directory)
     $cartrabbit->pluginMatched($root);
     $cartrabbit->loadPlugin($config);
     $cartrabbit->activatePlugin($root);
-//    });
-//exit;
-//    register_deactivation_hook($plugin, function () use ($cartrabbit, $root)
-//    {
-//        $cartrabbit->deactivatePlugin($root);
-//    });
 
-    // Ugly hack to make the install hook work correctly
-    // as WP doesn't allow closures to be passed here
-//    register_uninstall_hook($plugin, create_function('', 'cartrabbit()->deletePlugin(\'' . $root . '\');'));
     // To register the plugin
     $activePlugin = new \Cartrabbit\Framework\Base\Plugin($root.'/');
     $cartrabbit->registerPlugin($activePlugin);
-
-//    if ( ! is_plugin_active($plugin))
-//    {
-//        continue;
-//    }
 
     if ( ! $cartrabbit->pluginMatches($config))
     {
@@ -109,12 +88,12 @@ foreach ($iterator as $directory)
     }
     $cartrabbit->pluginMatched($root);
 
-//    @require_once $root.'/plugin.php';
-//    echo $root;exit;
-
     $cartrabbit->loadPlugin($config);
 
     $cartrabbit->registerAllPaths($config['views']);
+//    if (file_exists($root . '/app/hooks.php')) {
+//        @require_once ($root . '/app/hooks.php');
+//    }
 }
 
 /**

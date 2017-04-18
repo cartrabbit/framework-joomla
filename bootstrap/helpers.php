@@ -21,6 +21,18 @@ if ( ! function_exists('cartrabbit'))
     }
 }
 
+if ( ! function_exists('view'))
+{
+    /**
+     * Gets the cartrabbit view.
+     */
+    function view($path, $data = array())
+    {
+        $view = \Cartrabbit\Framework\Facades\View::getInstance();
+        return $view->make($path, $data);
+    }
+}
+
 if ( ! function_exists('session'))
 {
     /**

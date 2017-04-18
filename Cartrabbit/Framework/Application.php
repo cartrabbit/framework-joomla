@@ -162,6 +162,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
         $this->registerBaseProviders();
         $this->registerCoreContainerAliases();
         $this->registerConfiguredProviders();
+
     }
 
     /**
@@ -284,30 +285,6 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
             'router',
             array_get($config, 'routes', [])
         );
-
-        $this->loadPluginPanels(
-            'panel',
-            array_get($config, 'panels', [])
-        );
-
-//        $this->loadPluginX(
-//            'enqueue',
-//            array_get($config, 'enqueue', [])
-//        );
-
-//        $this->loadPluginX(
-//            'shortcode',
-//            array_get($config, 'shortcodes', [])
-//        );
-
-//        $this->loadPluginX(
-//            'widget',
-//            array_get($config, 'widgets', [])
-//        );
-
-//        $this->loadPluginAPIs(
-//            array_get($config, 'apis', [])
-//        );
 
         $this->addPluginViewGlobals(
             array_get($config, 'viewGlobals', [])
@@ -532,7 +509,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
 //                'http',
                 'router',
 //                'enqueue',
-                'panel',
+//                'panel',
 //                'shortcode',
 //                'widget'
             ]);
@@ -1060,6 +1037,14 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
         $this->setFacade();
 
         $this->fireAppCallbacks($this->bootedCallbacks);
+
+        // to load hooks.php
+        array_walk($this->plugins, function ($p)
+        {
+            if(file_exists($p->getBasePath().'/app/hooks.php')){
+                @require_once ($p->getBasePath().'/app/hooks.php');
+            }
+        });
     }
 
     /**

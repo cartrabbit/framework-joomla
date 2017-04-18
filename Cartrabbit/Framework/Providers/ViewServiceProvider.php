@@ -86,7 +86,6 @@ class ViewServiceProvider extends ServiceProvider
     protected function registerViewFactory()
     {
         $container = $this->app;
-
         // Register the View Finder first.
         $this->app->singleton('view.finder', function ($app){
             return new ViewFinder($app['filesystem'], $app['paths'], ['blade.php', 'php']);
