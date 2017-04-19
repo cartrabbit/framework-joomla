@@ -91,9 +91,6 @@ foreach ($iterator as $directory)
     $cartrabbit->loadPlugin($config);
 
     $cartrabbit->registerAllPaths($config['views']);
-//    if (file_exists($root . '/app/hooks.php')) {
-//        @require_once ($root . '/app/hooks.php');
-//    }
 }
 
 /**

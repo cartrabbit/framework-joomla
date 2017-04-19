@@ -1,7 +1,7 @@
 <?php namespace Cartrabbit\Framework;
 
 use InvalidArgumentException;
-
+use Illuminate\Http\Request;
 /**
  * @method void get()    get(array $parameters)    Adds a get route.
  * @method void post()   post(array $parameters)   Adds a post route.
@@ -12,20 +12,24 @@ use InvalidArgumentException;
 class Controller {
     protected $app;
     protected $middlewares = array();
+    protected $allow_access = false;
 
-    public function __construct(Application $app)
+    public function __construct(Application $app, Request $request)
     {
         $this->app = $app;
         // To handle middleware
         if(!empty($this->middlewares)){
-            return $this->next( $this->middlewares, true );
+            $this->next($request, $this->middlewares, true );
+            if(!$this->allow_access){
+                $this->handleMiddlewareFailure();
+            }
         }
     }
 
     /**
      * Handle the next / request response
      * */
-    public function next($middlewares, $first = false )
+    public function next($request, $middlewares, $first = false )
     {
         if ( (isset( $middlewares[0] ) && $first) || isset( $middlewares[1] ) )
         {
@@ -33,9 +37,9 @@ class Controller {
             {
                 array_shift( $middlewares );
             }
-            $this->fetch( $middlewares[0] .'@run', array($this, $middlewares));
+            $this->fetch( $middlewares[0] .'@run', array($request, $this, $middlewares));
         } else {
-            return ;
+            $this->allow_access = true;
         }
     }
 
@@ -63,5 +67,12 @@ class Controller {
             return call_user_func_array( array( $controller, $method ), $args );
         }
         return call_user_func_array( $callback, $args );
+    }
+
+    /**
+     * To handle middleware failure
+     * */
+    public function handleMiddlewareFailure(){
+        die;
     }
 }

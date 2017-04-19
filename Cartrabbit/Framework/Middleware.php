@@ -4,47 +4,38 @@ namespace Cartrabbit\Framework;
 use Illuminate\Http\Request;
 
 abstract class Middleware {
-    /**
-     * @var Cartrabbit\Framework\Router
-     */
-    protected $router;
 
+    protected $controller;
+    protected $middlewares;
     /**
-     * @var array
-     */
-    protected $store;
-    
-    /**
-     * Called by WP_Router to run Middleware.
+     * Called by Controller to run Middleware.
      *
-     * @param  Illuminate\Http\Request
-     * @param  Cartrabbit\Framework\Router
-     * @param  array
+     * @param  Controller Object
+     * @param  array $middlewares
      * @return mixed
      */
-    public function run( Request $request, Router $router, $store )
+    public function run(Request $request, $controller, $middlewares)
     {
-        $this->router = $router;
-        $this->store  = $store;
-        return $this->handle( $request );
+        $this->controller = $controller;
+        $this->middlewares = $middlewares;
+        return $this->handle($request);
     }
 
     /**
      * Calls the next Middleware.
      *
-     * @param  Illuminate\Http\Request
+     * @param  array $middlewares
      * @return void
      */
-    public function next( Request $request )
+    public function next(Request $request)
     {
-        $this->router->next( $request, $this->router, $this->store );
+        $this->controller->next($request, $this->middlewares);
     }
 
     /**
      * Method to be implemented by each Middleware.
      *
-     * @param  Illuminate\Http\Request
      * @return mixed
      */
-    abstract function handle( Request $request );
+    abstract function handle(Request $request);
 }
