@@ -21,6 +21,25 @@ if ( ! function_exists('cartrabbit'))
     }
 }
 
+if (! function_exists('app')) {
+    /**
+     * Get the available container instance.
+     *
+     * @param  string  $make
+     * @param  array   $parameters
+     * @return mixed|\Cartrabbit\Framework\Application
+     */
+    function app($make = null, $parameters = [])
+    {
+        if (is_null($make)) {
+            return Cartrabbit\Framework\Application::getInstance();
+        }
+
+        return Cartrabbit\Framework\Application::getInstance()->make($make, $parameters);
+
+    }
+}
+
 if ( ! function_exists('view'))
 {
     /**
