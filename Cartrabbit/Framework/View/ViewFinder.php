@@ -37,7 +37,17 @@ class ViewFinder extends FileViewFinder
         if ($this->hasHintInformation($name = trim($name))) {
             $segments = explode(static::HINT_PATH_DELIMITER, $name);
             if(isset($this->app['path.'.$segments[0]])){
-                $this->hints[$segments[0]] = $this->app['path.'.$segments[0]];
+                $this->addNamespace($segments[0], $this->app['path.'.$segments[0]]);
+            }
+
+            //For template override
+            if(isset($this->app['path.'.$segments[0].'Template'])){
+                $this->addNamespace($segments[0].'Template', $this->app['path.'.$segments[0].'Template']);
+                foreach ($this->getPossibleViewFiles($segments[1]) as $file) {
+                    if (file_exists($viewPath = $this->app['path.'.$segments[0].'Template'].'/'.$file)) {
+                        $name = $segments[0].'Template'.static::HINT_PATH_DELIMITER.$segments[1];
+                    }
+                }
             }
             return $this->views[$name] = $this->findNamespacedView($name);
         }
