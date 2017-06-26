@@ -29,72 +29,78 @@ if (!file_exists(CARTRABBIT_STORAGE)) {
  * Get Cartrabbit.
  */
 global $cartrabbit;
+global $hasCartRabbitApps;
+
 $cartrabbit = Cartrabbit\Framework\Application::getInstance();
+$hasCartRabbitApps = false;
+if ( ! function_exists('loadCartRabbitApps')) {
+    function loadCartRabbitApps($iterator, $type = 'components', $parentPlugin = '')
+    {
+        global $cartrabbit;
+        global $hasCartRabbitApps;
+        foreach ($iterator as $directory) {
 
-function loadCartRabbitApps($iterator, $type = 'components', $parentPlugin = ''){
-    global $cartrabbit;
-    foreach ($iterator as $directory) {
-
-        if ( ! $directory->valid() || $directory->isDot() || ! $directory->isDir()) {
-            continue;
-        }
-        $root = $directory->getPath() . '/' . $directory->getFilename();
-
-        if ( ! file_exists($root . '/cartrabbit.config.php')) {
-            continue;
-        }
-        $fileName = explode('_', $directory->getFilename());
-
-        if($type == 'plugins'){
-            if (!JPluginHelper::isEnabled($parentPlugin, $directory->getFilename())) {
+            if (!$directory->valid() || $directory->isDot() || !$directory->isDir()) {
                 continue;
             }
-        } else {
-            if (!JComponentHelper::isEnabled($directory->getFilename(), true)) {
+            $root = $directory->getPath() . '/' . $directory->getFilename();
+
+            if (!file_exists($root . '/cartrabbit.config.php')) {
                 continue;
             }
+            $fileName = explode('_', $directory->getFilename());
+
+            if ($type == 'plugins') {
+                if (!JPluginHelper::isEnabled($parentPlugin, $directory->getFilename())) {
+                    continue;
+                }
+            } else {
+                if (!JComponentHelper::isEnabled($directory->getFilename(), true)) {
+                    continue;
+                }
+            }
+            $hasCartRabbitApps = 1;
+            $fileName = isset($fileName[1]) ? $fileName[1] : $fileName[0];
+            $config = $cartrabbit->getPluginConfig($root);
+
+            $plugin = substr($root . '/' . $fileName . '.php', strlen(JPATH_ADMINISTRATOR . DIRECTORY_SEPARATOR . 'components'));
+            $plugin = ltrim($plugin, '/');
+
+            if (!$cartrabbit->pluginMatches($config)) {
+                $cartrabbit->pluginMismatched($root);
+            }
+
+            // To register the namespace
+            $loader = new \Composer\Autoload\ClassLoader();
+            $loader->addPsr4($config['namespace'] . '\\', $root . '/app');
+            // activate the autoloader
+            $loader->register();
+            // to enable searching the include path (eg. for PEAR packages)
+            $loader->setUseIncludePath(true);
+
+
+            $cartrabbit->pluginMatched($root);
+            $cartrabbit->loadPlugin($config);
+            $cartrabbit->activatePlugin($root);
+
+            // To register the plugin
+            $activePlugin = new \Cartrabbit\Framework\Base\Plugin($root . '/');
+            $cartrabbit->registerPlugin($activePlugin);
+
+            if (!$cartrabbit->pluginMatches($config)) {
+                $cartrabbit->pluginMismatched($root);
+
+                continue;
+            }
+            $cartrabbit->pluginMatched($root);
+
+            $cartrabbit->loadPlugin($config);
+
+            $cartrabbit->registerAllPaths($config['views']);
         }
-
-        $fileName = isset($fileName[1])? $fileName[1]: $fileName[0];
-        $config = $cartrabbit->getPluginConfig($root);
-
-        $plugin = substr($root . '/'.$fileName.'.php', strlen(JPATH_ADMINISTRATOR.DIRECTORY_SEPARATOR.'components'));
-        $plugin = ltrim($plugin, '/');
-
-        if ( ! $cartrabbit->pluginMatches($config)) {
-            $cartrabbit->pluginMismatched($root);
-        }
-
-        // To register the namespace
-        $loader = new \Composer\Autoload\ClassLoader();
-        $loader->addPsr4($config['namespace'].'\\', $root.'/app');
-        // activate the autoloader
-        $loader->register();
-        // to enable searching the include path (eg. for PEAR packages)
-        $loader->setUseIncludePath(true);
-
-
-        $cartrabbit->pluginMatched($root);
-        $cartrabbit->loadPlugin($config);
-        $cartrabbit->activatePlugin($root);
-
-        // To register the plugin
-        $activePlugin = new \Cartrabbit\Framework\Base\Plugin($root.'/');
-        $cartrabbit->registerPlugin($activePlugin);
-
-        if ( ! $cartrabbit->pluginMatches($config))
-        {
-            $cartrabbit->pluginMismatched($root);
-
-            continue;
-        }
-        $cartrabbit->pluginMatched($root);
-
-        $cartrabbit->loadPlugin($config);
-
-        $cartrabbit->registerAllPaths($config['views']);
     }
 }
+
 /**
  * Load all cartrabbit apps from component roots.
  */
@@ -116,4 +122,6 @@ foreach ($iteratorPluginRoot as $iteratorPlugindirectory){
 /**
  * Boot Cartrabbit.
  */
-$cartrabbit->boot();
+if($hasCartRabbitApps){
+    $cartrabbit->boot();
+}
