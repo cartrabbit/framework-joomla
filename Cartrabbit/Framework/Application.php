@@ -9,6 +9,7 @@
 
 namespace Cartrabbit\Framework;
 
+use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\ServiceProvider;
 //use vierbergenlars\SemVer\version as SemVersion;
 //use vierbergenlars\SemVer\expression as SemVersionExpression;
@@ -744,6 +745,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     protected function registerBaseProviders()
     {
+        //$this->register($this->resolveProviderClass('Illuminate\Session\SessionServiceProvider'));
         $this->register($this->resolveProviderClass(
             'Cartrabbit\Framework\Providers\CartrabbitServiceProvider'
         ));
@@ -1053,6 +1055,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     protected function setFacade()
     {
         Facade::setFacadeApplication($this);
+        //\Illuminate\Support\Facades\Facade::setFacadeApplication($this);
     }
 
     /**

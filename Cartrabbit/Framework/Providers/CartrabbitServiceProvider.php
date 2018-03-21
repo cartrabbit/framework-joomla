@@ -26,7 +26,7 @@ class CartrabbitServiceProvider extends ServiceProvider {
         $this->app->bind('filesystem', function () {
             return new Filesystem();
         });
-        
+
         $this->app->bind('events', function ($container) {
             return new Dispatcher($container);
         });
@@ -34,6 +34,11 @@ class CartrabbitServiceProvider extends ServiceProvider {
         $this->app->instance(
             'router',
             $this->app->make('Cartrabbit\Framework\Router', ['app' => $this->app])
+        );
+
+        $this->app->instance(
+            'url',
+            $this->app->make('Illuminate\Routing\UrlGenerator', ['app' => $this->app])
         );
 
         $this->app->bind(
@@ -72,8 +77,12 @@ class CartrabbitServiceProvider extends ServiceProvider {
         $capsule = new Capsule($this->app);
         $config = \JFactory::getConfig();
         $db = \JFactory::getDbo();
+        $driver = $db->serverType;
+        if(!isset($db->serverType) || (!in_array($db->serverType,array('mysql','pgsql','sqlite','sqlsrv')))){
+            $driver = 'mysql';
+        }
         $capsule->addConnection([
-            'driver' => $db->serverType,
+            'driver' => $driver,
             'host' => $config->get('host'),
             'database' => $config->get('db'),
             'username' => $config->get('user'),
