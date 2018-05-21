@@ -4,6 +4,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Events\Dispatcher;
+use Joomla\CMS\Factory;
 
 class CartrabbitServiceProvider extends ServiceProvider {
 
@@ -26,7 +27,7 @@ class CartrabbitServiceProvider extends ServiceProvider {
         $this->app->bind('filesystem', function () {
             return new Filesystem();
         });
-
+        
         $this->app->bind('events', function ($container) {
             return new Dispatcher($container);
         });
@@ -34,11 +35,6 @@ class CartrabbitServiceProvider extends ServiceProvider {
         $this->app->instance(
             'router',
             $this->app->make('Cartrabbit\Framework\Router', ['app' => $this->app])
-        );
-
-        $this->app->instance(
-            'url',
-            $this->app->make('Illuminate\Routing\UrlGenerator', ['app' => $this->app])
         );
 
         $this->app->bind(
@@ -75,6 +71,8 @@ class CartrabbitServiceProvider extends ServiceProvider {
     protected function registerEloquent()
     {
         $capsule = new Capsule($this->app);
+        //$app = Factory::getApplication();
+        //$config = $app->getConfig();
         $config = \JFactory::getConfig();
         $db = \JFactory::getDbo();
         $driver = $db->serverType;

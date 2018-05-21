@@ -9,7 +9,6 @@
 
 namespace Cartrabbit\Framework;
 
-use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\ServiceProvider;
 //use vierbergenlars\SemVer\version as SemVersion;
 //use vierbergenlars\SemVer\expression as SemVersionExpression;
@@ -745,7 +744,6 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     protected function registerBaseProviders()
     {
-        //$this->register($this->resolveProviderClass('Illuminate\Session\SessionServiceProvider'));
         $this->register($this->resolveProviderClass(
             'Cartrabbit\Framework\Providers\CartrabbitServiceProvider'
         ));
@@ -873,7 +871,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function resolveProviderClass($provider)
     {
-        return $this->make($provider, ['app' => $this]);
+        return $this->makeProvider($provider, ['app' => $this]);
     }
 
     /**
@@ -965,7 +963,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      * @param  array   $parameters
      * @return mixed
      */
-    public function make($abstract, Array $parameters = array())
+    public function makeProvider($abstract, Array $parameters = array())
     {
         $abstract = $this->getAlias($abstract);
 
@@ -1055,7 +1053,6 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     protected function setFacade()
     {
         Facade::setFacadeApplication($this);
-        //\Illuminate\Support\Facades\Facade::setFacadeApplication($this);
     }
 
     /**
@@ -1303,5 +1300,13 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function getMiddlewares(){
         return $this->middlewares;
+    }
+
+    public function runningInConsole(){
+
+    }
+
+    public function getCachedPackagesPath(){
+
     }
 }
