@@ -176,6 +176,15 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     }
 
     /**
+     * Determine if we are running in the console.
+     *
+     * @return bool
+     */
+    public function runningInConsole() {
+
+    }
+
+    /**
      * Get all loaded plugins.
      *
      * @return array
@@ -871,7 +880,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function resolveProviderClass($provider)
     {
-        return $this->makeProvider($provider, ['app' => $this]);
+        return $this->make($provider, ['app' => $this]);
     }
 
     /**
@@ -963,7 +972,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      * @param  array   $parameters
      * @return mixed
      */
-    public function makeProvider($abstract, Array $parameters = array())
+    public function make($abstract, Array $parameters = array())
     {
         $abstract = $this->getAlias($abstract);
 
@@ -972,7 +981,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
             $this->loadDeferredProvider($abstract);
         }
 
-        return parent::makeWith($abstract, $parameters);
+        return parent::make($abstract, $parameters);
     }
 
     /**
@@ -1293,6 +1302,10 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
         return $this->basePath() . '/vendor/services.json';
     }
 
+    public function getCachedPackagesPath() {
+
+    }
+
     /**
      * To get the middlewares
      *
@@ -1300,13 +1313,5 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function getMiddlewares(){
         return $this->middlewares;
-    }
-
-    public function runningInConsole(){
-
-    }
-
-    public function getCachedPackagesPath(){
-
     }
 }

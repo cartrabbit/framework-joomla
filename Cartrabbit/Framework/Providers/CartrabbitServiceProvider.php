@@ -4,7 +4,6 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Events\Dispatcher;
-use Joomla\CMS\Factory;
 
 class CartrabbitServiceProvider extends ServiceProvider {
 
