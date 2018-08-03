@@ -3,11 +3,10 @@
   "description": "Cartrabbit",
   "license": "MIT",
   "require": {
-    "illuminate/container": ">=5.4.*",
-    "illuminate/http": ">=5.4.*",
-    "illuminate/view": ">=5.4.*",
-    "illuminate/filesystem": ">=5.4.*",
-    "illuminate/pagination": ">=5.4.*"
+    "illuminate/container": ">=5.6",
+    "illuminate/http": ">=5.6",
+    "illuminate/view": ">=5.6",
+    "illuminate/filesystem": ">=5.6"
   },
   "autoload": {
     "psr-4": {
@@ -16,6 +15,5 @@
   },
   "config": {
     "preferred-install": "dist"
-  },
-  "minimum-stability": "dev"
+  }
 }
