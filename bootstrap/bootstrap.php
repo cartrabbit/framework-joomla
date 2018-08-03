@@ -38,6 +38,7 @@ if ( ! function_exists('loadCartRabbitApps')) {
     {
         global $cartrabbit;
         global $hasCartRabbitApps;
+
         foreach ($iterator as $directory) {
 
             if (!$directory->valid() || $directory->isDot() || !$directory->isDir()) {
@@ -48,17 +49,20 @@ if ( ! function_exists('loadCartRabbitApps')) {
             if (!file_exists($root . '/cartrabbit.config.php')) {
                 continue;
             }
+
             $fileName = explode('_', $directory->getFilename());
 
             if ($type == 'plugins') {
                 if (!JPluginHelper::isEnabled($parentPlugin, $directory->getFilename())) {
                     continue;
                 }
+                
             } else {
                 if (!JComponentHelper::isEnabled($directory->getFilename(), true)) {
                     continue;
                 }
             }
+
             $hasCartRabbitApps = 1;
             $fileName = isset($fileName[1]) ? $fileName[1] : $fileName[0];
             $config = $cartrabbit->getPluginConfig($root);

@@ -156,13 +156,13 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
 
 //        $this->version = new SemVersion(self::VERSION);
         $this->version = self::VERSION;
+
         $this->instance('app', $this);
         $this->instance('Illuminate\Container\Container', $this);
 
         $this->registerBaseProviders();
         $this->registerCoreContainerAliases();
         $this->registerConfiguredProviders();
-
     }
 
     /**
@@ -173,15 +173,6 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     public function basePath()
     {
         return JPATH_CACHE . '/cartrabbit-cache';
-    }
-
-    /**
-     * Determine if we are running in the console.
-     *
-     * @return bool
-     */
-    public function runningInConsole() {
-
     }
 
     /**
@@ -753,10 +744,12 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     protected function registerBaseProviders()
     {
+
+        //$this->register($this->resolveProviderClass('Illuminate\Session\SessionServiceProvider'));
         $this->register($this->resolveProviderClass(
             'Cartrabbit\Framework\Providers\CartrabbitServiceProvider'
         ));
-        
+
         $this->register($this->resolveProviderClass(
             'Cartrabbit\Framework\Providers\ViewServiceProvider'
         ));
@@ -880,7 +873,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function resolveProviderClass($provider)
     {
-        return $this->make($provider, ['app' => $this]);
+        return $this->makeApp($provider, ['app' => $this]);
     }
 
     /**
@@ -972,8 +965,9 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      * @param  array   $parameters
      * @return mixed
      */
-    public function make($abstract, Array $parameters = array())
+    public function makeApp($abstract, Array $parameters = array())
     {
+
         $abstract = $this->getAlias($abstract);
 
         if (isset($this->deferredServices[$abstract]))
@@ -981,7 +975,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
             $this->loadDeferredProvider($abstract);
         }
 
-        return parent::make($abstract, $parameters);
+        return parent::makeWith($abstract, $parameters);
     }
 
     /**
@@ -1050,10 +1044,17 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
         // to load hooks.php
         array_walk($this->plugins, function ($p)
         {
+
             if(file_exists($p->getBasePath().'/app/hooks.php')){
                 @require_once ($p->getBasePath().'/app/hooks.php');
             }
+
+            if(file_exists($p->getBasePath().'/hooks.php')){
+                @require_once ($p->getBasePath().'/hooks.php');
+            }
+
         });
+
     }
 
     /**
@@ -1062,6 +1063,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     protected function setFacade()
     {
         Facade::setFacadeApplication($this);
+        //\Illuminate\Support\Facades\Facade::setFacadeApplication($this);
     }
 
     /**
@@ -1302,10 +1304,6 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
         return $this->basePath() . '/vendor/services.json';
     }
 
-    public function getCachedPackagesPath() {
-
-    }
-
     /**
      * To get the middlewares
      *
@@ -1313,5 +1311,13 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function getMiddlewares(){
         return $this->middlewares;
+    }
+
+    public function runningInConsole(){
+        
+    }
+
+    public function getCachedPackagesPath(){
+
     }
 }
