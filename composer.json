@@ -3,11 +3,10 @@
   "description": "Cartrabbit",
   "license": "MIT",
   "require": {
-    "jgrossi/corcel": ">=1.4",
-    "illuminate/container": ">=5.4",
-    "illuminate/http": ">=5.4",
-    "illuminate/view": "^5.4",
-    "illuminate/filesystem": "^5.4"
+    "illuminate/container": "^5.4.0",
+    "illuminate/http": "^5.4.0",
+    "illuminate/view": "^5.4.0",
+    "illuminate/filesystem": "^5.4.0"
   },
   "autoload": {
     "psr-4": {
