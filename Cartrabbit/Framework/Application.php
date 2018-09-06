@@ -1320,4 +1320,8 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     public function getCachedPackagesPath(){
 
     }
+
+    public function runningUnitTests(){
+
+    }
 }
