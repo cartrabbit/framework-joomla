@@ -2,7 +2,8 @@
 
 use Illuminate\Contracts\Container\Container;
 
-interface Plugin {
+interface Plugin
+{
 
     /**
      * Activate the plugin.

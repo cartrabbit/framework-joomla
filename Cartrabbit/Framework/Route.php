@@ -4,7 +4,8 @@ use Exception;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 
-class Route {
+class Route
+{
 
     /**
      * @var \Cartrabbit\Framework\Application
@@ -54,22 +55,15 @@ class Route {
             $this->uses,
             array_merge(['app' => $this->app], $this->parameters)
         );
-
-        if ($response instanceof Response)
-        {
+        if ($response instanceof Response) {
             return $response;
         }
-
-        if (is_null($response) || is_string($response))
-        {
+        if (is_null($response) || is_string($response)) {
             return new Response($response);
         }
-
-        if (is_array($response) || $response instanceof Jsonable || $response instanceof JsonSerializable)
-        {
+        if (is_array($response) || $response instanceof Jsonable || $response instanceof JsonSerializable) {
             return new JsonResponse($response);
         }
-
         throw new Exception('Unknown response type!');
     }
 
@@ -82,11 +76,9 @@ class Route {
      */
     public function parameter($name, $default = null)
     {
-        if ( ! isset($this->parameters[$name]))
-        {
+        if (!isset($this->parameters[$name])) {
             return $default;
         }
-
         return $this->parameters[$name];
     }
 

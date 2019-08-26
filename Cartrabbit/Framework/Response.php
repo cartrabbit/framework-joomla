@@ -1,6 +1,6 @@
 <?php namespace Cartrabbit\Framework;
-
-class Response {
+class Response
+{
 
     /**
      * @var int
@@ -24,7 +24,7 @@ class Response {
 
     /**
      * @param       $body
-     * @param int   $status
+     * @param int $status
      * @param array $headers
      */
     public function __construct($body, $status = 200, $headers = null)

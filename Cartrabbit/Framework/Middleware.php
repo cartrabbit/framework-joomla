@@ -1,12 +1,15 @@
 <?php
+
 namespace Cartrabbit\Framework;
 
 use Illuminate\Http\Request;
 
-abstract class Middleware {
+abstract class Middleware
+{
 
     protected $controller;
     protected $middlewares;
+
     /**
      * Called by Controller to run Middleware.
      *

@@ -30,15 +30,12 @@ class ViewServiceProvider extends ServiceProvider
     protected function registerEngineResolver()
     {
         $serviceProvider = $this;
-
         $this->app->singleton('view.engine.resolver', function () use ($serviceProvider) {
             $resolver = new EngineResolver();
-
             // Register the engines.
             foreach (['php', 'blade'] as $engine) {
-                $serviceProvider->{'register'.ucfirst($engine).'Engine'}($engine, $resolver);
+                $serviceProvider->{'register' . ucfirst($engine) . 'Engine'}($engine, $resolver);
             }
-
             return $resolver;
         });
     }
@@ -46,7 +43,7 @@ class ViewServiceProvider extends ServiceProvider
     /**
      * Register the PHP engine to the EngineResolver.
      *
-     * @param string                                  $engine   Name of the engine.
+     * @param string $engine Name of the engine.
      * @param \Illuminate\View\Engines\EngineResolver $resolver
      */
     protected function registerPhpEngine($engine, EngineResolver $resolver)
@@ -59,7 +56,7 @@ class ViewServiceProvider extends ServiceProvider
     /**
      * Register the Blade engine to the EngineResolver.
      *
-     * @param string                                  $engine   Name of the engine.
+     * @param string $engine Name of the engine.
      * @param \Illuminate\View\Engines\EngineResolver $resolver
      */
     protected function registerBladeEngine($engine, EngineResolver $resolver)
@@ -69,10 +66,8 @@ class ViewServiceProvider extends ServiceProvider
         $storage = CARTRABBIT_STORAGE;
         $filesystem = $container['filesystem'];
 //        $filesystem = new Filesystem();
-
         $bladeCompiler = new BladeCompiler($filesystem, $storage);
         $this->app->instance('blade', $bladeCompiler);
-
         $resolver->register($engine, function () use ($bladeCompiler) {
             return new CompilerEngine($bladeCompiler);
         });
@@ -87,10 +82,9 @@ class ViewServiceProvider extends ServiceProvider
     {
         $container = $this->app;
         // Register the View Finder first.
-        $this->app->singleton('view.finder', function ($app){
+        $this->app->singleton('view.finder', function ($app) {
             return new ViewFinder($app['filesystem'], $app['paths'], ['blade.php', 'php']);
         });
-
         $this->app->singleton('view', function ($app) {
             $factory = new Factory($app['view.engine.resolver'], $app['view.finder'], $app['events']);
             // Set the container.
@@ -101,9 +95,7 @@ class ViewServiceProvider extends ServiceProvider
             // view composers may be classes registered in the container, which allows
             // for great testable, flexible composers for the application developer.
             $factory->setContainer($app);
-
             $factory->share('app', $app);
-
             return $factory;
         });
     }
@@ -122,6 +114,5 @@ class ViewServiceProvider extends ServiceProvider
     public function boot()
     {
         $blade = $this->app['view']->getEngineResolver()->resolve('blade')->getCompiler();
-
     }
 }

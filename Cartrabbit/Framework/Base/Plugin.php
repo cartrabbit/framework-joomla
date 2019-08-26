@@ -3,7 +3,8 @@
 use Cartrabbit\Framework\Plugin as PluginContract;
 use Illuminate\Contracts\Container\Container;
 
-class Plugin implements PluginContract {
+class Plugin implements PluginContract
+{
 
     /**
      * @var string
@@ -55,13 +56,11 @@ class Plugin implements PluginContract {
      */
     public function getConfig()
     {
-        if (is_null($this->config))
-        {
+        if (is_null($this->config)) {
             $this->config = file_exists("{$this->getBasePath()}/cartrabbit.config.php")
                 ? require "{$this->getBasePath()}/cartrabbit.config.php"
                 : [];
         }
-
         return $this->config;
     }
 
@@ -94,7 +93,6 @@ class Plugin implements PluginContract {
     public function setContainer(Container $container)
     {
         $this->container = $container;
-
         return $this;
     }
 
