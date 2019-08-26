@@ -1,7 +1,6 @@
 <?php
 
 namespace Cartrabbit\Framework\Facades;
-
 class View extends Facade
 {
     /**

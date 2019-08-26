@@ -1,7 +1,6 @@
 <?php
 
 namespace Cartrabbit\Framework\View;
-
 class Loop
 {
     /**
@@ -39,8 +38,8 @@ class Loop
     /**
      * Get author meta.
      *
-     * @param string $field   User field name.
-     * @param int    $user_id The user ID.
+     * @param string $field User field name.
+     * @param int $user_id The user ID.
      *
      * @return string
      */
@@ -52,16 +51,15 @@ class Loop
     /**
      * Get the content of the current post.
      *
-     * @param string $more_text    Content to show when there is more text.
-     * @param bool   $strip_teaser Strip teaser content before the more text.
-     * 
+     * @param string $more_text Content to show when there is more text.
+     * @param bool $strip_teaser Strip teaser content before the more text.
+     *
      * @return string The content of the current post.
      */
     public function content($more_text = null, $strip_teaser = false)
     {
         $content = apply_filters('the_content', get_the_content($more_text, $strip_teaser));
         $content = str_replace(']]>', ']]&gt;', $content);
-
         return $content;
     }
 
@@ -91,7 +89,6 @@ class Loop
         if (is_null($post)) {
             $post = $this->id();
         }
-
         return get_the_post_thumbnail($post, $size, $attr);
     }
 
@@ -99,22 +96,21 @@ class Loop
      * Get thumbnail url of current post.
      *
      * @param string|array $size The size of the current post thumbnail.
-     * @param bool         $icon
+     * @param bool $icon
      *
      * @return null|string
      */
     public function thumbnailUrl($size = null, $icon = false)
     {
         $data = wp_get_attachment_image_src(get_post_thumbnail_id($this->id()), $size, $icon);
-
         return (empty($data)) ? null : $data[0];
     }
 
     /**
      * Get the permalink of the current post.
      *
-     * @param int|\WP_Post $post      The post ID or WP_Post object.
-     * @param bool         $leavename Keep or not the post name.
+     * @param int|\WP_Post $post The post ID or WP_Post object.
+     * @param bool $leavename Keep or not the post name.
      *
      * @return string The permalink of the current post.
      */
@@ -145,7 +141,6 @@ class Loop
     public function tags($id = 0)
     {
         $tags = get_the_tags($id);
-
         return $tags ? $tags : [];
     }
 
@@ -164,16 +159,14 @@ class Loop
         if (!$post) {
             $post = $this->id();
         }
-
         $terms = get_the_terms($post, $taxonomy);
-
         return $terms ? $terms : [];
     }
 
     /**
      * Get the date of the current post.
      *
-     * @param string       $d    Date format.
+     * @param string $d Date format.
      * @param int|\WP_Post $post The post ID or WP_Post object
      *
      * @return string The date of the current post.
@@ -188,21 +181,21 @@ class Loop
      *
      * @author Guriev Eugen
      *
-     * @param string|array $class   One or more classes to add to the post class list.
+     * @param string|array $class One or more classes to add to the post class list.
      * @param int|\WP_Post $post_id The post ID or the post object.
      *
      * @return string
      */
     public function postClass($class = '', $post_id = null)
     {
-        return 'class="'.implode(' ', get_post_class($class, $post_id)).'"';
+        return 'class="' . implode(' ', get_post_class($class, $post_id)) . '"';
     }
 
     /**
      * Return the next link html anchor tag for post entries.
      *
-     * @param string $label    Link content
-     * @param int    $max_page Max pages in current query.
+     * @param string $label Link content
+     * @param int $max_page Max pages in current query.
      *
      * @return string
      */

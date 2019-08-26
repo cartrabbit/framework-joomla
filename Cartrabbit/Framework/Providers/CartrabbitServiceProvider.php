@@ -6,7 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Events\Dispatcher;
 
-class CartrabbitServiceProvider extends ServiceProvider {
+class CartrabbitServiceProvider extends ServiceProvider
+{
 
     /**
      * Register the service provider.
@@ -15,61 +16,49 @@ class CartrabbitServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-
         $this->registerEloquent();
         $this->app->instance(
             'env',
             defined('CARTRABBIT_ENV') ? CARTRABBIT_ENV
                 : (defined('WP_DEBUG') ? 'local'
-                    : 'production')
+                : 'production')
         );
-
         $this->app->bind('filesystem', function () {
             return new Filesystem();
         });
-
         $this->app->bind('events', function ($container) {
             return new Dispatcher($container);
         });
-
         $this->app->instance(
             'router',
             $this->app->make('Cartrabbit\Framework\Router', ['app' => $this->app])
         );
-
         $this->app->instance('request',
-        $this->app->make('Illuminate\Http\Request', ['app' => $this->app])
-            );
+            $this->app->make('Illuminate\Http\Request', ['app' => $this->app])
+        );
         //$this->app['request']
-
         /*$this->app->instance(
             'url',
             $this->app->make('Illuminate\Routing\UrlGenerator', ['app' => $this->app])
         );*/
-
         $this->app->bind(
             'route',
             'Cartrabbit\Framework\Route'
         );
-
         $this->app->instance(
             'session',
             $this->app->make('Symfony\Component\HttpFoundation\Session\Session', ['app' => $this->app])
         );
-
         $this->app->alias(
             'session',
             'Symfony\Component\HttpFoundation\Session\Session'
         );
-
         $this->app->singleton(
             'errors',
-            function ()
-            {
+            function () {
                 return session_flashed('__validation_errors', []);
             }
         );
-
         $_GLOBALS['errors'] = $this->app['errors'];
     }
 
@@ -84,7 +73,7 @@ class CartrabbitServiceProvider extends ServiceProvider {
         $config = \JFactory::getConfig();
         $db = \JFactory::getDbo();
         $driver = $db->serverType;
-        if(!isset($db->serverType) || (!in_array($db->serverType,array('mysql','pgsql','sqlite','sqlsrv')))){
+        if (!isset($db->serverType) || (!in_array($db->serverType, array('mysql', 'pgsql', 'sqlite', 'sqlsrv')))) {
             $driver = 'mysql';
         }
         $capsule->addConnection([
@@ -97,7 +86,6 @@ class CartrabbitServiceProvider extends ServiceProvider {
             'collation' => 'utf8_unicode_ci',//'utf8mb4',
             'prefix' => $config->get('dbprefix')
         ]);
-
         $capsule->setAsGlobal();
         $capsule->bootEloquent();
     }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Cartrabbit\Framework\Installer;
 
 use Exception;
@@ -10,7 +11,6 @@ use JLoader;
 use JLog;
 
 defined('_JEXEC') or die;
-
 JLoader::import('joomla.filesystem.folder');
 JLoader::import('joomla.filesystem.file');
 JLoader::import('joomla.installer.installer');
@@ -44,7 +44,7 @@ class InstallScript
         // modules => { (folder) => { (module) }* }*
         'modules' => array(
             'admin' => array(),
-            'site'  => array()
+            'site' => array()
         ),
         // plugins => { (folder) => { (element) }* }*
         'plugins' => array(
@@ -59,7 +59,7 @@ class InstallScript
      * @var   array
      */
     protected $removeFilesFree = array(
-        'files'   => array(
+        'files' => array(
             // Use pathnames relative to your site's root, e.g.
             // 'administrator/components/com_foobar/helpers/whatever.php'
         ),
@@ -76,7 +76,7 @@ class InstallScript
      * @var   array
      */
     protected $removeFilesAllVersions = array(
-        'files'   => array(
+        'files' => array(
             // Use pathnames relative to your site's root, e.g.
             // 'administrator/components/com_foobar/helpers/whatever.php'
         ),
@@ -164,78 +164,53 @@ class InstallScript
      * Joomla! pre-flight event. This runs before Joomla! installs or updates the component. This is our last chance to
      * tell Joomla! if it should abort the installation.
      *
-     * @param   string                       $type    Installation type (install, update, discover_install)
-     * @param   \JInstallerAdapterComponent  $parent  Parent object
+     * @param   string $type Installation type (install, update, discover_install)
+     * @param   \JInstallerAdapterComponent $parent Parent object
      *
      * @return  boolean  True to let the installation proceed, false to halt the installation
      */
     public function preflight($type, $parent)
     {
         // Check the minimum PHP version
-        if (!empty($this->minimumPHPVersion))
-        {
-            if (defined('PHP_VERSION'))
-            {
+        if (!empty($this->minimumPHPVersion)) {
+            if (defined('PHP_VERSION')) {
                 $version = PHP_VERSION;
-            }
-            elseif (function_exists('phpversion'))
-            {
+            } elseif (function_exists('phpversion')) {
                 $version = phpversion();
-            }
-            else
-            {
+            } else {
                 $version = '5.0.0'; // all bets are off!
             }
-
-            if (!version_compare($version, $this->minimumPHPVersion, 'ge'))
-            {
+            if (!version_compare($version, $this->minimumPHPVersion, 'ge')) {
                 $msg = "<p>You need PHP $this->minimumPHPVersion or later to install this component</p>";
-
                 JLog::add($msg, JLog::WARNING, 'jerror');
-
                 return false;
             }
         }
-
         // Check the minimum Joomla! version
-        if (!empty($this->minimumJoomlaVersion) && !version_compare(JVERSION, $this->minimumJoomlaVersion, 'ge'))
-        {
+        if (!empty($this->minimumJoomlaVersion) && !version_compare(JVERSION, $this->minimumJoomlaVersion, 'ge')) {
             $msg = "<p>You need Joomla! $this->minimumJoomlaVersion or later to install this component</p>";
-
             JLog::add($msg, JLog::WARNING, 'jerror');
-
             return false;
         }
-
         // Check the maximum Joomla! version
-        if (!empty($this->maximumJoomlaVersion) && !version_compare(JVERSION, $this->maximumJoomlaVersion, 'le'))
-        {
+        if (!empty($this->maximumJoomlaVersion) && !version_compare(JVERSION, $this->maximumJoomlaVersion, 'le')) {
             $msg = "<p>You need Joomla! $this->maximumJoomlaVersion or earlier to install this component</p>";
-
             JLog::add($msg, JLog::WARNING, 'jerror');
-
             return false;
         }
-
         // Always reset the OPcache if it's enabled. Otherwise there's a good chance the server will not know we are
         // replacing .php scripts. This is a major concern since PHP 5.5 included and enabled OPcache by default.
-        if (function_exists('opcache_reset'))
-        {
+        if (function_exists('opcache_reset')) {
             opcache_reset();
         }
-
         // Workarounds for JInstaller issues.
-        if (in_array($type, array('install', 'discover_install')))
-        {
+        if (in_array($type, array('install', 'discover_install'))) {
             // Bugfix for "Database function returned no error"
             $this->bugfixDBFunctionReturnedNoError();
-        }
-        else
-        {
+        } else {
             // Bugfix for "Can not build admin menus"
             $this->bugfixCantBuildAdminMenus();
         }
-
         return true;
     }
 
@@ -244,8 +219,8 @@ class InstallScript
      * or updating your component. This is the last chance you've got to perform any additional installations, clean-up,
      * database updates and similar housekeeping functions.
      *
-     * @param   string                       $type   install, update or discover_update
-     * @param   \JInstallerAdapterComponent  $parent Parent object
+     * @param   string $type install, update or discover_update
+     * @param   \JInstallerAdapterComponent $parent Parent object
      */
     public function postflight($type, $parent)
     {
@@ -256,78 +231,51 @@ class InstallScript
             $this->schemaXmlPath
         );
         $dbInstaller->updateSchema();
-
         // Make sure menu items are installed
         $this->_createAdminMenus($parent);
-
         // Make sure menu items are published (surprise goal in the 92' by JInstaller wins the cup for "most screwed up
         // bug in the history of Joomla!")
         $this->_reallyPublishAdminMenuItems($parent);
-
         // Which files should I remove?
-        if ($this->isPaid)
-        {
+        if ($this->isPaid) {
             // This is the paid version, only remove the removeFilesAllVersions files
             $removeFiles = $this->removeFilesAllVersions;
-        }
-        else
-        {
+        } else {
             // This is the free version, remove the removeFilesAllVersions and removeFilesFree files
             $removeFiles = array('files' => array(), 'folders' => array());
-
-            if (isset($this->removeFilesAllVersions['files']))
-            {
-                if (isset($this->removeFilesFree['files']))
-                {
+            if (isset($this->removeFilesAllVersions['files'])) {
+                if (isset($this->removeFilesFree['files'])) {
                     $removeFiles['files'] = array_merge($this->removeFilesAllVersions['files'], $this->removeFilesFree['files']);
-                }
-                else
-                {
+                } else {
                     $removeFiles['files'] = $this->removeFilesAllVersions['files'];
                 }
-            }
-            elseif (isset($this->removeFilesFree['files']))
-            {
+            } elseif (isset($this->removeFilesFree['files'])) {
                 $removeFiles['files'] = $this->removeFilesFree['files'];
             }
-
-            if (isset($this->removeFilesAllVersions['folders']))
-            {
-                if (isset($this->removeFilesFree['folders']))
-                {
+            if (isset($this->removeFilesAllVersions['folders'])) {
+                if (isset($this->removeFilesFree['folders'])) {
                     $removeFiles['folders'] = array_merge($this->removeFilesAllVersions['folders'], $this->removeFilesFree['folders']);
-                }
-                else
-                {
+                } else {
                     $removeFiles['folders'] = $this->removeFilesAllVersions['folders'];
                 }
-            }
-            elseif (isset($this->removeFilesFree['folders']))
-            {
+            } elseif (isset($this->removeFilesFree['folders'])) {
                 $removeFiles['folders'] = $this->removeFilesFree['folders'];
             }
         }
-
         // Remove obsolete files and folders
         $this->removeFilesAndFolders($removeFiles);
-
         // Copy the CLI files (if any)
         $this->copyCliFiles($parent);
-
         // Show the post-installation page
         $this->renderPostInstallation($parent);
-
         // Uninstall obsolete subextensions
         $this->uninstallObsoleteSubextensions($parent);
-
         // Clear the FOF cache
         $false = false;
         $cache = \JFactory::getCache('cartrabbit', '');
         $cache->store($false, 'cache', 'cartrabbit');
-
         // Make sure the Joomla! menu structure is correct
         $this->_rebuildMenu();
-
         // Add post-installation messages on Joomla! 3.2 and later
         $this->_applyPostInstallationMessages();
     }
@@ -335,7 +283,7 @@ class InstallScript
     /**
      * Runs on uninstallation
      *
-     * @param   \JInstallerAdapterComponent  $parent  The parent object
+     * @param   \JInstallerAdapterComponent $parent The parent object
      */
     public function uninstall($parent)
     {
@@ -344,12 +292,9 @@ class InstallScript
             ($this->schemaXmlPathRelative ? JPATH_ADMINISTRATOR . '/components/' . $this->componentName : '') . '/' .
             $this->schemaXmlPath
         );
-
         $dbInstaller->removeSchema();
-
         // Uninstall post-installation messages on Joomla! 3.2 and later
         $this->uninstallPostInstallationMessages();
-
         // Show the post-uninstallation page
         $this->renderPostUninstallation($parent);
     }
@@ -357,21 +302,16 @@ class InstallScript
     /**
      * Copies the CLI scripts into Joomla!'s cli directory
      *
-     * @param   \JInstallerAdapterComponent  $parent
+     * @param   \JInstallerAdapterComponent $parent
      */
     protected function copyCliFiles($parent)
     {
         $src = $parent->getParent()->getPath('source');
-
-        foreach ($this->cliScriptFiles as $script)
-        {
-            if (is_file(JPATH_ROOT . '/cli/' . $script))
-            {
+        foreach ($this->cliScriptFiles as $script) {
+            if (is_file(JPATH_ROOT . '/cli/' . $script)) {
                 JFile::delete(JPATH_ROOT . '/cli/' . $script);
             }
-
-            if (is_file($src . '/' . $this->cliSourcePath . '/' . $script))
-            {
+            if (is_file($src . '/' . $this->cliSourcePath . '/' . $script)) {
                 JFile::copy($src . '/' . $this->cliSourcePath . '/' . $script, JPATH_ROOT . '/cli/' . $script);
             }
         }
@@ -380,7 +320,7 @@ class InstallScript
     /**
      * Override this method to display a custom component installation message if you so wish
      *
-     * @param  \JInstallerAdapterComponent  $parent  Parent class calling us
+     * @param  \JInstallerAdapterComponent $parent Parent class calling us
      */
     protected function renderPostInstallation($parent)
     {
@@ -389,7 +329,7 @@ class InstallScript
     /**
      * Override this method to display a custom component uninstallation message if you so wish
      *
-     * @param  \JInstallerAdapterComponent  $parent  Parent class calling us
+     * @param  \JInstallerAdapterComponent $parent Parent class calling us
      */
     protected function renderPostUninstallation($parent)
     {
@@ -401,43 +341,30 @@ class InstallScript
     protected function bugfixDBFunctionReturnedNoError()
     {
         $db = JFactory::getDbo();
-
         // Fix broken #__assets records
         $query = $db->getQuery(true);
         $query->select('id')
             ->from('#__assets')
             ->where($db->qn('name') . ' = ' . $db->q($this->componentName));
         $db->setQuery($query);
-
-        try
-        {
+        try {
             $ids = $db->loadColumn();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             return;
         }
-
-        if (!empty($ids))
-        {
-            foreach ($ids as $id)
-            {
+        if (!empty($ids)) {
+            foreach ($ids as $id) {
                 $query = $db->getQuery(true);
                 $query->delete('#__assets')
                     ->where($db->qn('id') . ' = ' . $db->q($id));
                 $db->setQuery($query);
-
-                try
-                {
+                try {
                     $db->execute();
-                }
-                catch (Exception $exc)
-                {
+                } catch (Exception $exc) {
                     // Nothing
                 }
             }
         }
-
         // Fix broken #__extensions records
         $query = $db->getQuery(true);
         $query->select('extension_id')
@@ -445,27 +372,19 @@ class InstallScript
             ->where($db->qn('element') . ' = ' . $db->q($this->componentName));
         $db->setQuery($query);
         $ids = $db->loadColumn();
-
-        if (!empty($ids))
-        {
-            foreach ($ids as $id)
-            {
+        if (!empty($ids)) {
+            foreach ($ids as $id) {
                 $query = $db->getQuery(true);
                 $query->delete('#__extensions')
                     ->where($db->qn('extension_id') . ' = ' . $db->q($id));
                 $db->setQuery($query);
-
-                try
-                {
+                try {
                     $db->execute();
-                }
-                catch (Exception $exc)
-                {
+                } catch (Exception $exc) {
                     // Nothing
                 }
             }
         }
-
         // Fix broken #__menu records
         $query = $db->getQuery(true);
         $query->select('id')
@@ -475,22 +394,15 @@ class InstallScript
             ->where($db->qn('link') . ' LIKE ' . $db->q('index.php?option=' . $this->componentName));
         $db->setQuery($query);
         $ids = $db->loadColumn();
-
-        if (!empty($ids))
-        {
-            foreach ($ids as $id)
-            {
+        if (!empty($ids)) {
+            foreach ($ids as $id) {
                 $query = $db->getQuery(true);
                 $query->delete('#__menu')
                     ->where($db->qn('id') . ' = ' . $db->q($id));
                 $db->setQuery($query);
-
-                try
-                {
+                try {
                     $db->execute();
-                }
-                catch (Exception $exc)
-                {
+                } catch (Exception $exc) {
                     // Nothing
                 }
             }
@@ -503,47 +415,32 @@ class InstallScript
     protected function bugfixCantBuildAdminMenus()
     {
         $db = JFactory::getDbo();
-
         // If there are multiple #__extensions record, keep one of them
         $query = $db->getQuery(true);
         $query->select('extension_id')
             ->from('#__extensions')
             ->where($db->qn('element') . ' = ' . $db->q($this->componentName));
         $db->setQuery($query);
-
-        try
-        {
+        try {
             $ids = $db->loadColumn();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             return;
         }
-
-
-        if (count($ids) > 1)
-        {
+        if (count($ids) > 1) {
             asort($ids);
             $extension_id = array_shift($ids); // Keep the oldest id
-
-            foreach ($ids as $id)
-            {
+            foreach ($ids as $id) {
                 $query = $db->getQuery(true);
                 $query->delete('#__extensions')
                     ->where($db->qn('extension_id') . ' = ' . $db->q($id));
                 $db->setQuery($query);
-
-                try
-                {
+                try {
                     $db->execute();
-                }
-                catch (Exception $exc)
-                {
+                } catch (Exception $exc) {
                     // Nothing
                 }
             }
         }
-
         // If there are multiple assets records, delete all except the oldest one
         $query = $db->getQuery(true);
         $query->select('id')
@@ -551,99 +448,90 @@ class InstallScript
             ->where($db->qn('name') . ' = ' . $db->q($this->componentName));
         $db->setQuery($query);
         $ids = $db->loadObjectList();
-
-        if (count($ids) > 1)
-        {
+        if (count($ids) > 1) {
             asort($ids);
             $asset_id = array_shift($ids); // Keep the oldest id
-
-            foreach ($ids as $id)
-            {
+            foreach ($ids as $id) {
                 $query = $db->getQuery(true);
                 $query->delete('#__assets')
                     ->where($db->qn('id') . ' = ' . $db->q($id));
                 $db->setQuery($query);
-
-                try
-                {
+                try {
                     $db->execute();
-                }
-                catch (Exception $exc)
-                {
+                } catch (Exception $exc) {
                     // Nothing
                 }
             }
         }
-
         // Remove #__menu records for good measure! –– I think this is not necessary and causes the menu item to
         // disappear on extension update.
         /**
-        $query = $db->getQuery(true);
-        $query->select('id')
-        ->from('#__menu')
-        ->where($db->qn('type') . ' = ' . $db->q('component'))
-        ->where($db->qn('menutype') . ' = ' . $db->q('main'))
-        ->where($db->qn('link') . ' LIKE ' . $db->q('index.php?option=' . $this->componentName));
-        $db->setQuery($query);
-
-        try
-        {
-        $ids1 = $db->loadColumn();
-        }
-        catch (Exception $exc)
-        {
-        $ids1 = array();
-        }
-
-        if (empty($ids1))
-        {
-        $ids1 = array();
-        }
-
-        $query = $db->getQuery(true);
-        $query->select('id')
-        ->from('#__menu')
-        ->where($db->qn('type') . ' = ' . $db->q('component'))
-        ->where($db->qn('menutype') . ' = ' . $db->q('main'))
-        ->where($db->qn('link') . ' LIKE ' . $db->q('index.php?option=' . $this->componentName . '&%'));
-        $db->setQuery($query);
-
-        try
-        {
-        $ids2 = $db->loadColumn();
-        }
-        catch (Exception $exc)
-        {
-        $ids2 = array();
-        }
-
-        if (empty($ids2))
-        {
-        $ids2 = array();
-        }
-
-        $ids = array_merge($ids1, $ids2);
-
-        if (!empty($ids))
-        {
-        foreach ($ids as $id)
-        {
-        $query = $db->getQuery(true);
-        $query->delete('#__menu')
-        ->where($db->qn('id') . ' = ' . $db->q($id));
-        $db->setQuery($query);
-
-        try
-        {
-        $db->execute();
-        }
-        catch (Exception $exc)
-        {
-        // Nothing
-        }
-        }
-        }
-        /**/
+         * $query = $db->getQuery(true);
+         * $query->select('id')
+         * ->from('#__menu')
+         * ->where($db->qn('type') . ' = ' . $db->q('component'))
+         * ->where($db->qn('menutype') . ' = ' . $db->q('main'))
+         * ->where($db->qn('link') . ' LIKE ' . $db->q('index.php?option=' . $this->componentName));
+         * $db->setQuery($query);
+         *
+         * try
+         * {
+         * $ids1 = $db->loadColumn();
+         * }
+         * catch (Exception $exc)
+         * {
+         * $ids1 = array();
+         * }
+         *
+         * if (empty($ids1))
+         * {
+         * $ids1 = array();
+         * }
+         *
+         * $query = $db->getQuery(true);
+         * $query->select('id')
+         * ->from('#__menu')
+         * ->where($db->qn('type') . ' = ' . $db->q('component'))
+         * ->where($db->qn('menutype') . ' = ' . $db->q('main'))
+         * ->where($db->qn('link') . ' LIKE ' . $db->q('index.php?option=' . $this->componentName . '&%'));
+         * $db->setQuery($query);
+         *
+         * try
+         * {
+         * $ids2 = $db->loadColumn();
+         * }
+         * catch (Exception $exc)
+         * {
+         * $ids2 = array();
+         * }
+         *
+         * if (empty($ids2))
+         * {
+         * $ids2 = array();
+         * }
+         *
+         * $ids = array_merge($ids1, $ids2);
+         *
+         * if (!empty($ids))
+         * {
+         * foreach ($ids as $id)
+         * {
+         * $query = $db->getQuery(true);
+         * $query->delete('#__menu')
+         * ->where($db->qn('id') . ' = ' . $db->q($id));
+         * $db->setQuery($query);
+         *
+         * try
+         * {
+         * $db->execute();
+         * }
+         * catch (Exception $exc)
+         * {
+         * // Nothing
+         * }
+         * }
+         * }
+         * /**/
     }
 
     /**
@@ -654,33 +542,22 @@ class InstallScript
     protected function removeFilesAndFolders($removeList)
     {
         // Remove files
-        if (isset($removeList['files']) && !empty($removeList['files']))
-        {
-            foreach ($removeList['files'] as $file)
-            {
+        if (isset($removeList['files']) && !empty($removeList['files'])) {
+            foreach ($removeList['files'] as $file) {
                 $f = JPATH_ROOT . '/' . $file;
-
-                if (!is_file($f))
-                {
+                if (!is_file($f)) {
                     continue;
                 }
-
                 JFile::delete($f);
             }
         }
-
         // Remove folders
-        if (isset($removeList['folders']) && !empty($removeList['folders']))
-        {
-            foreach ($removeList['folders'] as $folder)
-            {
+        if (isset($removeList['folders']) && !empty($removeList['folders'])) {
+            foreach ($removeList['folders'] as $folder) {
                 $f = JPATH_ROOT . '/' . $folder;
-
-                if (!is_dir($f))
-                {
+                if (!is_dir($f)) {
                     continue;
                 }
-
                 JFolder::delete($f);
             }
         }
@@ -696,22 +573,15 @@ class InstallScript
     protected function uninstallObsoleteSubextensions($parent)
     {
         JLoader::import('joomla.installer.installer');
-
         $db = JFactory::getDBO();
-
         $status = new \stdClass();
         $status->modules = array();
         $status->plugins = array();
-
         // Modules uninstallation
-        if (isset($this->uninstallation_queue['modules']) && count($this->uninstallation_queue['modules']))
-        {
-            foreach ($this->uninstallation_queue['modules'] as $folder => $modules)
-            {
-                if (count($modules))
-                {
-                    foreach ($modules as $module)
-                    {
+        if (isset($this->uninstallation_queue['modules']) && count($this->uninstallation_queue['modules'])) {
+            foreach ($this->uninstallation_queue['modules'] as $folder => $modules) {
+                if (count($modules)) {
+                    foreach ($modules as $module) {
                         // Find the module ID
                         $sql = $db->getQuery(true)
                             ->select($db->qn('extension_id'))
@@ -721,12 +591,11 @@ class InstallScript
                         $db->setQuery($sql);
                         $id = $db->loadResult();
                         // Uninstall the module
-                        if ($id)
-                        {
+                        if ($id) {
                             $installer = new JInstaller;
                             $result = $installer->uninstall('module', $id, 1);
                             $status->modules[] = array(
-                                'name'   => 'mod_' . $module,
+                                'name' => 'mod_' . $module,
                                 'client' => $folder,
                                 'result' => $result
                             );
@@ -735,16 +604,11 @@ class InstallScript
                 }
             }
         }
-
         // Plugins uninstallation
-        if (isset($this->uninstallation_queue['plugins']) && count($this->uninstallation_queue['plugins']))
-        {
-            foreach ($this->uninstallation_queue['plugins'] as $folder => $plugins)
-            {
-                if (count($plugins))
-                {
-                    foreach ($plugins as $plugin)
-                    {
+        if (isset($this->uninstallation_queue['plugins']) && count($this->uninstallation_queue['plugins'])) {
+            foreach ($this->uninstallation_queue['plugins'] as $folder => $plugins) {
+                if (count($plugins)) {
+                    foreach ($plugins as $plugin) {
                         $sql = $db->getQuery(true)
                             ->select($db->qn('extension_id'))
                             ->from($db->qn('#__extensions'))
@@ -752,15 +616,13 @@ class InstallScript
                             ->where($db->qn('element') . ' = ' . $db->q($plugin))
                             ->where($db->qn('folder') . ' = ' . $db->q($folder));
                         $db->setQuery($sql);
-
                         $id = $db->loadResult();
-                        if ($id)
-                        {
+                        if ($id) {
                             $installer = new JInstaller;
                             $result = $installer->uninstall('plugin', $id, 1);
                             $status->plugins[] = array(
-                                'name'   => 'plg_' . $plugin,
-                                'group'  => $folder,
+                                'name' => 'plg_' . $plugin,
+                                'group' => $folder,
                                 'result' => $result
                             );
                         }
@@ -768,7 +630,6 @@ class InstallScript
                 }
             }
         }
-
         return $status;
     }
 
@@ -785,7 +646,6 @@ class InstallScript
         /** @var \JTableMenu $table */
         $table = \JTable::getInstance('menu');
         $option = $parent->get('element');
-
         // If a component exists with this option in the table then we don't need to add menus
         $query = $db->getQuery(true)
             ->select('m.id, e.extension_id')
@@ -794,11 +654,8 @@ class InstallScript
             ->where('m.parent_id = 1')
             ->where('m.client_id = 1')
             ->where('e.element = ' . $db->quote($option));
-
         $db->setQuery($query);
-
         $componentrow = $db->loadObject();
-
         // Let's find the extension id
         $query->clear()
             ->select('e.extension_id')
@@ -806,10 +663,8 @@ class InstallScript
             ->where('e.element = ' . $db->quote($option));
         $db->setQuery($query);
         $component_id = $db->loadResult();
-
         // Ok, now its time to handle the menus.  Start with the component root menu, then handle submenus.
         $menuElement = $parent->get('manifest')->administration->menu;
-
         // We need to insert the menu item as the last child of Joomla!'s menu root node. By default this is the
         // menu item with ID=1. However, some crappy upgrade scripts enjoy screwing it up. Hey, ho, the workaround
         // way I go.
@@ -818,9 +673,7 @@ class InstallScript
             ->from($db->qn('#__menu'))
             ->where($db->qn('id') . ' = ' . $db->q(1));
         $rootItemId = $db->setQuery($query)->loadResult();
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // Guess what? The Problem has happened. Let's find the root node by title.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -829,9 +682,7 @@ class InstallScript
                 ->where($db->qn('title') . ' = ' . $db->q('Menu_Item_Root'));
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // For crying out loud, did that idiot changed the title too?! Let's find it by alias.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -840,9 +691,7 @@ class InstallScript
                 ->where($db->qn('alias') . ' = ' . $db->q('root'));
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // Dude. Dude! Duuuuuuude! The alias is screwed up, too?! Find it by component ID.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -851,9 +700,7 @@ class InstallScript
                 ->where($db->qn('component_id') . ' = ' . $db->q('0'));
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // Your site is more of a "shite" than a "site". Let's try with minimum lft value.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -862,16 +709,12 @@ class InstallScript
                 ->order($db->qn('lft') . ' ASC');
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // I quit. Your site is broken. What the hell are you doing with it? I'll just throw an error.
             throw new Exception("Your site is broken. There is no root menu item. As a result it is impossible to create menu items. The installation of this component has failed. Please fix your database and retry!", 500);
         }
-
         /** @var \SimpleXMLElement $menuElement */
-        if ($menuElement)
-        {
+        if ($menuElement) {
             $data = array();
             $data['menutype'] = 'main';
             $data['client_id'] = 1;
@@ -886,10 +729,8 @@ class InstallScript
             $data['home'] = 0;
             $data['path'] = '';
             $data['params'] = '';
-        }
-        // No menu element was specified, Let's make a generic menu item
-        else
-        {
+        } // No menu element was specified, Let's make a generic menu item
+        else {
             $data = array();
             $data['menutype'] = 'main';
             $data['client_id'] = 1;
@@ -905,20 +746,13 @@ class InstallScript
             $data['path'] = '';
             $data['params'] = '';
         }
-
-        try
-        {
+        try {
             $table->setLocation($rootItemId, 'last-child');
-        }
-        catch (\InvalidArgumentException $e)
-        {
+        } catch (\InvalidArgumentException $e) {
             JLog::add($e->getMessage(), JLog::WARNING, 'jerror');
-
             return false;
         }
-
-        if (!$table->bind($data) || !$table->check() || !$table->store())
-        {
+        if (!$table->bind($data) || !$table->check() || !$table->store()) {
             // The menu item already exists. Delete it and retry instead of throwing an error.
             $query->clear()
                 ->select('id')
@@ -929,21 +763,14 @@ class InstallScript
                 ->where('type = ' . $db->quote('component'))
                 ->where('parent_id = 1')
                 ->where('home = 0');
-
             $db->setQuery($query);
             $menu_ids_level1 = $db->loadColumn();
-
-            if (empty($menu_ids_level1))
-            {
+            if (empty($menu_ids_level1)) {
                 // Oops! Could not get the menu ID. Go back and rollback changes.
                 \JError::raiseWarning(1, $table->getError());
-
                 return false;
-            }
-            else
-            {
+            } else {
                 $ids = implode(',', $menu_ids_level1);
-
                 $query->clear()
                     ->select('id')
                     ->from('#__menu')
@@ -953,53 +780,38 @@ class InstallScript
                     ->where('parent_id in (' . $ids . ')')
                     ->where('level = 2')
                     ->where('home = 0');
-
                 $db->setQuery($query);
                 $menu_ids_level2 = $db->loadColumn();
-
                 $ids = implode(',', array_merge($menu_ids_level1, $menu_ids_level2));
-
                 // Remove the old menu item
                 $query->clear()
                     ->delete('#__menu')
                     ->where('id in (' . $ids . ')');
-
                 $db->setQuery($query);
                 $db->execute();
-
                 // Retry creating the menu item
                 $table->setLocation($rootItemId, 'last-child');
-
-                if (!$table->bind($data) || !$table->check() || !$table->store())
-                {
+                if (!$table->bind($data) || !$table->check() || !$table->store()) {
                     // Install failed, warn user and rollback changes
                     \JError::raiseWarning(1, $table->getError());
-
                     return false;
                 }
             }
         }
-
         /*
          * Since we have created a menu item, we add it to the installation step stack
          * so that if we have to rollback the changes we can undo it.
          */
         $parent->getParent()->pushStep(array('type' => 'menu', 'id' => $component_id));
-
         /*
          * Process SubMenus
          */
-
-        if (!$parent->get('manifest')->administration->submenu)
-        {
+        if (!$parent->get('manifest')->administration->submenu) {
             return true;
         }
-
         $parent_id = $table->id;
-
         /** @var \SimpleXMLElement $child */
-        foreach ($parent->get('manifest')->administration->submenu->menu as $child)
-        {
+        foreach ($parent->get('manifest')->administration->submenu->menu as $child) {
             $data = array();
             $data['menutype'] = 'main';
             $data['client_id'] = 1;
@@ -1011,74 +823,48 @@ class InstallScript
             $data['component_id'] = $component_id;
             $data['img'] = ((string)$child->attributes()->img) ? (string)$child->attributes()->img : 'class:component';
             $data['home'] = 0;
-
             // Set the sub menu link
-            if ((string)$child->attributes()->link)
-            {
+            if ((string)$child->attributes()->link) {
                 $data['link'] = 'index.php?' . $child->attributes()->link;
-            }
-            else
-            {
+            } else {
                 $request = array();
-
-                if ((string)$child->attributes()->act)
-                {
+                if ((string)$child->attributes()->act) {
                     $request[] = 'act=' . $child->attributes()->act;
                 }
-
-                if ((string)$child->attributes()->task)
-                {
+                if ((string)$child->attributes()->task) {
                     $request[] = 'task=' . $child->attributes()->task;
                 }
-
-                if ((string)$child->attributes()->controller)
-                {
+                if ((string)$child->attributes()->controller) {
                     $request[] = 'controller=' . $child->attributes()->controller;
                 }
-
-                if ((string)$child->attributes()->view)
-                {
+                if ((string)$child->attributes()->view) {
                     $request[] = 'view=' . $child->attributes()->view;
                 }
-
-                if ((string)$child->attributes()->layout)
-                {
+                if ((string)$child->attributes()->layout) {
                     $request[] = 'layout=' . $child->attributes()->layout;
                 }
-
-                if ((string)$child->attributes()->sub)
-                {
+                if ((string)$child->attributes()->sub) {
                     $request[] = 'sub=' . $child->attributes()->sub;
                 }
-
                 $qstring = (count($request)) ? '&' . implode('&', $request) : '';
                 $data['link'] = 'index.php?option=' . $option . $qstring;
             }
-
             $table = \JTable::getInstance('menu');
-
-            try
-            {
+            try {
                 $table->setLocation($parent_id, 'last-child');
-            }
-            catch (\InvalidArgumentException $e)
-            {
+            } catch (\InvalidArgumentException $e) {
                 return false;
             }
-
-            if (!$table->bind($data) || !$table->check() || !$table->store())
-            {
+            if (!$table->bind($data) || !$table->check() || !$table->store()) {
                 // Install failed, rollback changes
                 return false;
             }
-
             /*
              * Since we have created a menu item, we add it to the installation step stack
              * so that if we have to rollback the changes we can undo it.
              */
             $parent->getParent()->pushStep(array('type' => 'menu', 'id' => $component_id));
         }
-
         return true;
     }
 
@@ -1093,7 +879,6 @@ class InstallScript
     {
         $db = $parent->getParent()->getDbo();
         $option = $parent->get('element');
-
         $query = $db->getQuery(true)
             ->update('#__menu AS m')
             ->join('LEFT', '#__extensions AS e ON m.component_id = e.extension_id')
@@ -1101,15 +886,10 @@ class InstallScript
             ->where('m.parent_id = 1')
             ->where('m.client_id = 1')
             ->where('e.element = ' . $db->quote($option));
-
         $db->setQuery($query);
-
-        try
-        {
+        try {
             $db->execute();
-        }
-        catch (Exception $e)
-        {
+        } catch (Exception $e) {
             // If it fails, it fails. Who cares.
         }
     }
@@ -1123,7 +903,6 @@ class InstallScript
         /** @var \JTableMenu $table */
         $table = \JTable::getInstance('menu');
         $db = $table->getDbo();
-
         // We need to rebuild the menu based on its root item. By default this is the menu item with ID=1. However, some
         // crappy upgrade scripts enjoy screwing it up. Hey, ho, the workaround way I go.
         $query = $db->getQuery(true)
@@ -1131,9 +910,7 @@ class InstallScript
             ->from($db->qn('#__menu'))
             ->where($db->qn('id') . ' = ' . $db->q(1));
         $rootItemId = $db->setQuery($query)->loadResult();
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // Guess what? The Problem has happened. Let's find the root node by title.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -1142,9 +919,7 @@ class InstallScript
                 ->where($db->qn('title') . ' = ' . $db->q('Menu_Item_Root'));
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // For crying out loud, did that idiot changed the title too?! Let's find it by alias.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -1153,9 +928,7 @@ class InstallScript
                 ->where($db->qn('alias') . ' = ' . $db->q('root'));
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // Dude. Dude! Duuuuuuude! The alias is screwed up, too?! Find it by component ID.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -1164,9 +937,7 @@ class InstallScript
                 ->where($db->qn('component_id') . ' = ' . $db->q('0'));
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // Your site is more of a "shite" than a "site". Let's try with minimum lft value.
             $rootItemId = null;
             $query = $db->getQuery(true)
@@ -1175,13 +946,10 @@ class InstallScript
                 ->order($db->qn('lft') . ' ASC');
             $rootItemId = $db->setQuery($query, 0, 1)->loadResult();
         }
-
-        if (is_null($rootItemId))
-        {
+        if (is_null($rootItemId)) {
             // I quit. Your site is broken.
             return false;
         }
-
         $table->rebuild($rootItemId);
     }
 
@@ -1258,143 +1026,100 @@ class InstallScript
     protected function addPostInstallationMessage(array $options)
     {
         // Make sure there are options set
-        if (!is_array($options))
-        {
+        if (!is_array($options)) {
             throw new Exception('Post-installation message definitions must be of type array', 500);
         }
-
         // Initialise array keys
         $defaultOptions = array(
-            'extension_id'       => '',
-            'type'               => '',
-            'title_key'          => '',
-            'description_key'    => '',
-            'action_key'         => '',
+            'extension_id' => '',
+            'type' => '',
+            'title_key' => '',
+            'description_key' => '',
+            'action_key' => '',
             'language_extension' => '',
             'language_client_id' => '',
-            'action_file'        => '',
-            'action'             => '',
-            'condition_file'     => '',
-            'condition_method'   => '',
+            'action_file' => '',
+            'action' => '',
+            'condition_file' => '',
+            'condition_method' => '',
             'version_introduced' => '',
-            'enabled'            => '1',
+            'enabled' => '1',
         );
-
         $options = array_merge($defaultOptions, $options);
-
         // Array normalisation. Removes array keys not belonging to a definition.
         $defaultKeys = array_keys($defaultOptions);
         $allKeys = array_keys($options);
         $extraKeys = array_diff($allKeys, $defaultKeys);
-
-        if (!empty($extraKeys))
-        {
-            foreach ($extraKeys as $key)
-            {
+        if (!empty($extraKeys)) {
+            foreach ($extraKeys as $key) {
                 unset($options[$key]);
             }
         }
-
         // Normalisation of integer values
         $options['extension_id'] = (int)$options['extension_id'];
         $options['language_client_id'] = (int)$options['language_client_id'];
         $options['enabled'] = (int)$options['enabled'];
-
         // Normalisation of 0/1 values
-        foreach (array('language_client_id', 'enabled') as $key)
-        {
+        foreach (array('language_client_id', 'enabled') as $key) {
             $options[$key] = $options[$key] ? 1 : 0;
         }
-
         // Make sure there's an extension_id
-        if (!(int)$options['extension_id'])
-        {
+        if (!(int)$options['extension_id']) {
             throw new Exception('Post-installation message definitions need an extension_id', 500);
         }
-
         // Make sure there's a valid type
-        if (!in_array($options['type'], array('message', 'link', 'action')))
-        {
+        if (!in_array($options['type'], array('message', 'link', 'action'))) {
             throw new Exception('Post-installation message definitions need to declare a type of message, link or action', 500);
         }
-
         // Make sure there's a title key
-        if (empty($options['title_key']))
-        {
+        if (empty($options['title_key'])) {
             throw new Exception('Post-installation message definitions need a title key', 500);
         }
-
         // Make sure there's a description key
-        if (empty($options['description_key']))
-        {
+        if (empty($options['description_key'])) {
             throw new Exception('Post-installation message definitions need a description key', 500);
         }
-
         // If the type is anything other than message you need an action key
-        if (($options['type'] != 'message') && empty($options['action_key']))
-        {
+        if (($options['type'] != 'message') && empty($options['action_key'])) {
             throw new Exception('Post-installation message definitions need an action key when they are of type "' . $options['type'] . '"', 500);
         }
-
         // You must specify the language extension
-        if (empty($options['language_extension']))
-        {
+        if (empty($options['language_extension'])) {
             throw new Exception('Post-installation message definitions need to specify which extension contains their language keys', 500);
         }
-
         // The action file and method are only required for the "action" type
-        if ($options['type'] == 'action')
-        {
-            if (empty($options['action_file']))
-            {
+        if ($options['type'] == 'action') {
+            if (empty($options['action_file'])) {
                 throw new Exception('Post-installation message definitions need an action file when they are of type "action"', 500);
             }
-
             $file_path = \FOFTemplateUtils::parsePath($options['action_file'], true);
-
-            if (!@is_file($file_path))
-            {
+            if (!@is_file($file_path)) {
                 throw new Exception('The action file ' . $options['action_file'] . ' of your post-installation message definition does not exist', 500);
             }
-
-            if (empty($options['action']))
-            {
+            if (empty($options['action'])) {
                 throw new Exception('Post-installation message definitions need an action (function name) when they are of type "action"', 500);
             }
         }
-
-        if ($options['type'] == 'link')
-        {
-            if (empty($options['link']))
-            {
+        if ($options['type'] == 'link') {
+            if (empty($options['link'])) {
                 throw new Exception('Post-installation message definitions need an action (URL) when they are of type "link"', 500);
             }
         }
-
         // The condition file and method are only required when the type is not "message"
-        if ($options['type'] != 'message')
-        {
-            if (empty($options['condition_file']))
-            {
+        if ($options['type'] != 'message') {
+            if (empty($options['condition_file'])) {
                 throw new Exception('Post-installation message definitions need a condition file when they are of type "' . $options['type'] . '"', 500);
             }
-
             $file_path = \FOFTemplateUtils::parsePath($options['condition_file'], true);
-
-            if (!@is_file($file_path))
-            {
+            if (!@is_file($file_path)) {
                 throw new Exception('The condition file ' . $options['condition_file'] . ' of your post-installation message definition does not exist', 500);
             }
-
-            if (empty($options['condition_method']))
-            {
+            if (empty($options['condition_method'])) {
                 throw new Exception('Post-installation message definitions need a condition method (function name) when they are of type "' . $options['type'] . '"', 500);
             }
         }
-
         // Check if the definition exists
         $tableName = '#__postinstall_messages';
-
         $db = JFactory::getDbo();
         $query = $db->getQuery(true)
             ->select('*')
@@ -1403,32 +1128,22 @@ class InstallScript
             ->where($db->qn('type') . ' = ' . $db->q($options['type']))
             ->where($db->qn('title_key') . ' = ' . $db->q($options['title_key']));
         $existingRow = $db->setQuery($query)->loadAssoc();
-
         // Is the existing definition the same as the one we're trying to save (ignore the enabled flag)?
-        if (!empty($existingRow))
-        {
+        if (!empty($existingRow)) {
             $same = true;
-
-            foreach ($options as $k => $v)
-            {
-                if ($k == 'enabled')
-                {
+            foreach ($options as $k => $v) {
+                if ($k == 'enabled') {
                     continue;
                 }
-
-                if ($existingRow[$k] != $v)
-                {
+                if ($existingRow[$k] != $v) {
                     $same = false;
                     break;
                 }
             }
-
             // Trying to add the same row as the existing one; quit
-            if ($same)
-            {
+            if ($same) {
                 return;
             }
-
             // Otherwise it's not the same row. Remove the old row before insert a new one.
             $query = $db->getQuery(true)
                 ->delete($db->qn($tableName))
@@ -1437,7 +1152,6 @@ class InstallScript
                 ->where($db->q('title_key') . ' = ' . $db->q($options['title_key']));
             $db->setQuery($query)->execute();
         }
-
         // Insert the new row
         $options = (object)$options;
         $db->insertObject($tableName, $options);
@@ -1451,17 +1165,13 @@ class InstallScript
     protected function _applyPostInstallationMessages()
     {
         // Make sure it's Joomla! 3.2.0 or later
-        if (!version_compare(JVERSION, '3.2.0', 'ge'))
-        {
+        if (!version_compare(JVERSION, '3.2.0', 'ge')) {
             return;
         }
-
         // Make sure there are post-installation messages
-        if (empty($this->postInstallationMessages))
-        {
+        if (empty($this->postInstallationMessages)) {
             return;
         }
-
         // Get the extension ID for our component
         $db = JFactory::getDbo();
         $query = $db->getQuery(true);
@@ -1469,25 +1179,16 @@ class InstallScript
             ->from('#__extensions')
             ->where($db->qn('element') . ' = ' . $db->q($this->componentName));
         $db->setQuery($query);
-
-        try
-        {
+        try {
             $ids = $db->loadColumn();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             return;
         }
-
-        if (empty($ids))
-        {
+        if (empty($ids)) {
             return;
         }
-
         $extension_id = array_shift($ids);
-
-        foreach ($this->postInstallationMessages as $message)
-        {
+        foreach ($this->postInstallationMessages as $message) {
             $message['extension_id'] = $extension_id;
             $this->addPostInstallationMessage($message);
         }
@@ -1496,17 +1197,13 @@ class InstallScript
     protected function uninstallPostInstallationMessages()
     {
         // Make sure it's Joomla! 3.2.0 or later
-        if (!version_compare(JVERSION, '3.2.0', 'ge'))
-        {
+        if (!version_compare(JVERSION, '3.2.0', 'ge')) {
             return;
         }
-
         // Make sure there are post-installation messages
-        if (empty($this->postInstallationMessages))
-        {
+        if (empty($this->postInstallationMessages)) {
             return;
         }
-
         // Get the extension ID for our component
         $db = JFactory::getDbo();
         $query = $db->getQuery(true);
@@ -1514,33 +1211,21 @@ class InstallScript
             ->from('#__extensions')
             ->where($db->qn('element') . ' = ' . $db->q($this->componentName));
         $db->setQuery($query);
-
-        try
-        {
+        try {
             $ids = $db->loadColumn();
-        }
-        catch (Exception $exc)
-        {
+        } catch (Exception $exc) {
             return;
         }
-
-        if (empty($ids))
-        {
+        if (empty($ids)) {
             return;
         }
-
         $extension_id = array_shift($ids);
-
         $query = $db->getQuery(true)
             ->delete($db->qn('#__postinstall_messages'))
             ->where($db->qn('extension_id') . ' = ' . $db->q($extension_id));
-
-        try
-        {
+        try {
             $db->setQuery($query)->execute();
-        }
-        catch (Exception $e)
-        {
+        } catch (Exception $e) {
             return;
         }
     }

@@ -1,9 +1,11 @@
 <?php
+
 namespace Cartrabbit\Framework\Views;
 
 use Cartrabbit\Framework\Application;
 
-class HtmlView{
+class HtmlView
+{
     public static $instance = null;
 
     public $_data = null;
@@ -12,8 +14,8 @@ class HtmlView{
 
     protected $plugin_folder = array();
 
-    public function __construct($properties=null) {
-
+    public function __construct($properties = null)
+    {
     }
 
     public static function getInstance(array $config = array())
@@ -27,17 +29,17 @@ class HtmlView{
     /**
      * load view
      * */
-    public function loadView($name, $vars){
+    public function loadView($name, $vars)
+    {
         $this->_data = $vars;
         $views = $this->getViews();
-
         $viewNameAsArray = explode('/', $name);
         $viewName = trim($viewNameAsArray['0'], '@');
-        if(isset($views[$viewName])){
+        if (isset($views[$viewName])) {
             $path = str_replace($viewNameAsArray['0'], '', $name);
-            $path = $views[$viewName].$path;
+            $path = $views[$viewName] . $path;
             $this->current_path = $path;
-            if(file_exists($path)){
+            if (file_exists($path)) {
                 ob_start();
                 include($path);
                 $html = ob_get_contents();
@@ -53,28 +55,29 @@ class HtmlView{
     /**
      * To load views
      * */
-    protected function getViews(){
+    protected function getViews()
+    {
         $instance = Application::getInstance();
         $plugins = $instance->getPlugins();
         $views = array();
-        foreach ($plugins as $plugin){
+        foreach ($plugins as $plugin) {
             $config = $plugin->getConfig();
 //            $basePath = $plugin->getBasePath();
 //            echo $basePath;exit;
             $pluginViews = $config['views'];
             $views = array_merge($views, $pluginViews);
         }
-
         return $views;
     }
 
     /**
      * Load another file
      * */
-    protected function loadTemplate($name){
+    protected function loadTemplate($name)
+    {
         $filePath = dirname($this->current_path);
-        $file = $filePath.'/'.$name;
-        if(file_exists($file)){
+        $file = $filePath . '/' . $name;
+        if (file_exists($file)) {
             ob_start();
             include($file);
             $html = ob_get_contents();
@@ -86,14 +89,15 @@ class HtmlView{
     /**
      * Get Template view
      * */
-    protected function getTemplateView(){
-
+    protected function getTemplateView()
+    {
     }
 
     /**
      * send response
      * */
-    protected function response($body, $status = 200, $headers = null){
+    protected function response($body, $status = 200, $headers = null)
+    {
         return new \Cartrabbit\Framework\Response($body, $status, $headers);
     }
 }

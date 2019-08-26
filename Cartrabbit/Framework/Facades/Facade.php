@@ -1,6 +1,7 @@
 <?php
 
 namespace Cartrabbit\Framework\Facades;
+
 use Cartrabbit\Framework\Application;
 
 abstract class Facade
@@ -31,7 +32,6 @@ abstract class Facade
     public static function getInstance()
     {
         $name = static::getFacadeAccessor();
-
         return static::$app[$name];
     }
 
@@ -53,14 +53,13 @@ abstract class Facade
      * instance method.
      *
      * @param string $method The class method used.
-     * @param array  $args   The method arguments.
+     * @param array $args The method arguments.
      *
      * @return mixed
      */
     public static function __callStatic($method, $args)
     {
         $instance = static::getInstance();
-
         /*
          * Call the instance and its method.
          */

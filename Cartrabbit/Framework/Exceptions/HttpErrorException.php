@@ -1,6 +1,6 @@
 <?php namespace Cartrabbit\Framework\Exceptions;
-
-class HttpErrorException extends \Exception {
+class HttpErrorException extends \Exception
+{
 
     /**
      * The status code.
@@ -20,16 +20,13 @@ class HttpErrorException extends \Exception {
      * Constructs the HttpErrorException.
      *
      * @param integer $status
-     * @param string|mixed  $message
+     * @param string|mixed $message
      */
     public function __construct($status = 500, $message = null)
     {
         parent::__construct(is_string($message) ? $message : null);
-
         $this->status = $status;
-
-        if ( ! is_string($message))
-        {
+        if (!is_string($message)) {
             $this->response = $message;
         }
     }

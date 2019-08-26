@@ -13,6 +13,7 @@ class ViewFinder extends FileViewFinder
         $app = Application::getInstance();
         $this->app = $app;
     }
+
     /**
      * Return a list of found views.
      *
@@ -26,7 +27,7 @@ class ViewFinder extends FileViewFinder
     /**
      * Get the fully qualified location of the view.
      *
-     * @param  string  $name
+     * @param  string $name
      * @return string
      */
     public function find($name)
@@ -36,16 +37,15 @@ class ViewFinder extends FileViewFinder
         }
         if ($this->hasHintInformation($name = trim($name))) {
             $segments = explode(static::HINT_PATH_DELIMITER, $name);
-            if(isset($this->app['path.'.$segments[0]])){
-                $this->addNamespace($segments[0], $this->app['path.'.$segments[0]]);
+            if (isset($this->app['path.' . $segments[0]])) {
+                $this->addNamespace($segments[0], $this->app['path.' . $segments[0]]);
             }
-
             //For template override
-            if(isset($this->app['path.'.$segments[0].'Template'])){
-                $this->addNamespace($segments[0].'Template', $this->app['path.'.$segments[0].'Template']);
+            if (isset($this->app['path.' . $segments[0] . 'Template'])) {
+                $this->addNamespace($segments[0] . 'Template', $this->app['path.' . $segments[0] . 'Template']);
                 foreach ($this->getPossibleViewFiles($segments[1]) as $file) {
-                    if (file_exists($viewPath = $this->app['path.'.$segments[0].'Template'].'/'.$file)) {
-                        $name = $segments[0].'Template'.static::HINT_PATH_DELIMITER.$segments[1];
+                    if (file_exists($viewPath = $this->app['path.' . $segments[0] . 'Template'] . '/' . $file)) {
+                        $name = $segments[0] . 'Template' . static::HINT_PATH_DELIMITER . $segments[1];
                     }
                 }
             }
@@ -57,22 +57,21 @@ class ViewFinder extends FileViewFinder
     /**
      * Find the given view in the list of paths.
      *
-     * @param  string  $name
-     * @param  array   $paths
+     * @param  string $name
+     * @param  array $paths
      * @return string
      *
      * @throws \InvalidArgumentException
      */
     protected function findInPaths($name, $paths)
     {
-        foreach ((array) $paths as $path) {
+        foreach ((array)$paths as $path) {
             foreach ($this->getPossibleViewFiles($name) as $file) {
-                if (file_exists($viewPath = $path.'/'.$file)) {
+                if (file_exists($viewPath = $path . '/' . $file)) {
                     return $viewPath;
                 }
             }
         }
-
         throw new InvalidArgumentException("View [$name] not found.");
     }
 }
