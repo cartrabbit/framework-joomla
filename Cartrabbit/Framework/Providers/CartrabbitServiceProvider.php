@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Events\Dispatcher;
@@ -29,21 +30,9 @@ class CartrabbitServiceProvider extends ServiceProvider
         $this->app->bind('events', function ($container) {
             return new Dispatcher($container);
         });
-        $this->app->instance(
-            'router',
-            $this->app->make('Cartrabbit\Framework\Router', ['app' => $this->app])
-        );
+
         $this->app->instance('request',
             $this->app->make('Illuminate\Http\Request', ['app' => $this->app])
-        );
-        //$this->app['request']
-        /*$this->app->instance(
-            'url',
-            $this->app->make('Illuminate\Routing\UrlGenerator', ['app' => $this->app])
-        );*/
-        $this->app->bind(
-            'route',
-            'Cartrabbit\Framework\Route'
         );
         $this->app->instance(
             'session',

@@ -40,5 +40,5 @@ abstract class Middleware
      *
      * @return mixed
      */
-    abstract function handle(Request $request);
+    abstract function handle(Request $request, \Closure $next, $guard = null);
 }
