@@ -11,6 +11,7 @@ namespace Cartrabbit\Framework;
 
 use Closure;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 //use vierbergenlars\SemVer\version as SemVersion;
@@ -214,11 +215,22 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
         }
         $this->instance('app', $this);
         $this->instance('Illuminate\Container\Container', $this);
+        //$this->instance('J2Store\Providers\RouteServiceProvider', RouteServiceProvider::class);
         $this->registerBaseProviders();
         $this->registerCoreContainerAliases();
         $this->registerConfiguredProviders();
     }
 
+    /**
+     * Configure the real-time facade namespace.
+     *
+     * @param  string  $namespace
+     * @return void
+     */
+    public function provideFacades($namespace)
+    {
+        \Cartrabbit\Framework\AliasLoader::setFacadeNamespace($namespace);
+    }
     /**
      * Set the base path for the application.
      *
@@ -1206,7 +1218,9 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
             'Cartrabbit\Framework\Providers\ViewServiceProvider'
         ));
         $this->register($this->resolveProviderClass('Illuminate\Routing\RoutingServiceProvider'));
-        $this->register($this->resolveProviderClass('Illuminate\Events\EventServiceProvider'));
+        //$this->register($this->resolveProviderClass('Cartrabbit\Framework\Providers\RouteServiceProvider'));
+        //$this->register($this->resolveProviderClass('\J2Store\Providers\RouteServiceProvider'));
+        //$this->register($this->resolveProviderClass('Illuminate\Events\EventServiceProvider'));
         //$this->register(new EventServiceProvider($this));
         //
     }
@@ -1218,15 +1232,20 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     protected function registerCoreContainerAliases()
     {
+
         $aliases = [
             'app' => [
                 'Illuminate\Foundation\Application',
                 'Illuminate\Contracts\Container\Container',
                 'Illuminate\Contracts\Foundation\Application'
             ],
+            'route'               => [Route::class],
             'router'               => [\Illuminate\Routing\Router::class, \Illuminate\Contracts\Routing\Registrar::class, \Illuminate\Contracts\Routing\BindingRegistrar::class],
             'request'              => [\Illuminate\Http\Request::class, \Symfony\Component\HttpFoundation\Request::class],
             'validator'            => [\Illuminate\Validation\Factory::class, \Illuminate\Contracts\Validation\Factory::class],
+            //'url'                  => [\Illuminate\Routing\UrlGenerator::class, \Illuminate\Contracts\Routing\UrlGenerator::class],
+            //'config'               => [\Illuminate\Config\Repository::class, \Illuminate\Contracts\Config\Repository::class],
+
         ];
         foreach ($aliases as $key => $aliases) {
             foreach ((array)$aliases as $alias) {
@@ -1274,6 +1293,7 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
      */
     public function resolveProviderClass($provider)
     {
+
         return $this->makeApp($provider, ['app' => $this]);
     }
 
@@ -1325,9 +1345,11 @@ class Application extends \Illuminate\Container\Container implements \Illuminate
     public function makeApp($abstract, Array $parameters = array())
     {
         $abstract = $this->getAlias($abstract);
+
         if (isset($this->deferredServices[$abstract])) {
             $this->loadDeferredProvider($abstract);
         }
+
         return parent::makeWith($abstract, $parameters);
     }
 

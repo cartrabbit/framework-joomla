@@ -5,11 +5,11 @@ use Illuminate\Http\Request;
 
 class Controller extends \Illuminate\Routing\Controller
 {
-    protected $app;
+    /*protected $app;
     protected $middlewares = array();
-    protected $allow_access = false;
+    protected $allow_access = false;*/
 
-    public function __construct(Application $app, Request $request)
+   /* public function __construct(Application $app, Request $request)
     {
         $this->app = $app;
         // To handle middleware
@@ -19,12 +19,12 @@ class Controller extends \Illuminate\Routing\Controller
                 $this->handleMiddlewareFailure();
             }
         }
-    }
+    }*/
 
     /**
      * Handle the next / request response
      * */
-    public function next($request, $middlewares, $first = false)
+    /*public function next($request, $middlewares, $first = false)
     {
         if ((isset($middlewares[0]) && $first) || isset($middlewares[1])) {
             if (!$first) {
@@ -34,7 +34,7 @@ class Controller extends \Illuminate\Routing\Controller
         } else {
             $this->allow_access = true;
         }
-    }
+    }*/
 
     /**
      * Fetches a controller or callbacks response.
@@ -43,11 +43,13 @@ class Controller extends \Illuminate\Routing\Controller
      * @param array $args
      * @return mixed
      */
-    public function fetch($callback, $args = array())
+    /*public function fetch($callback, $args = array())
     {
         if (is_string($callback)) {
             list($class, $method) = explode('@', $callback, 2);
+
             $middlewares = $this->app->getMiddlewares();
+
             if (isset($middlewares[$class])) {
                 $class = $middlewares[$class];
             }
@@ -59,13 +61,13 @@ class Controller extends \Illuminate\Routing\Controller
             return call_user_func_array(array($controller, $method), $args);
         }
         return call_user_func_array($callback, $args);
-    }
+    }*/
 
     /**
      * To handle middleware failure
      * */
-    public function handleMiddlewareFailure()
+    /*public function handleMiddlewareFailure()
     {
         die;
-    }
+    }*/
 }
